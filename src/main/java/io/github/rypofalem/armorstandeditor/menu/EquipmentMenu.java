@@ -19,38 +19,39 @@
 
 package io.github.rypofalem.armorstandeditor.menu;
 
-import io.github.rypofalem.armorstandeditor.Debug;
 import io.github.rypofalem.armorstandeditor.PlayerEditor;
 
 import io.github.rypofalem.armorstandeditor.api.events.editor.ArmorStandEditorOpenedEvent;
-import net.coreprotect.CoreProtect;
-import net.coreprotect.CoreProtectAPI;
+import net.coreprotect.listener.player.PlayerInteractEntityListener;
+import net.coreprotect.utility.Util;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-
-import static org.bukkit.Bukkit.getServer;
+import java.util.Arrays;
 
 public class EquipmentMenu implements EditorMenu {
+
+    private static final int HELMET_INDEX;
+    private static final int CHEST_INDEX;
+    private static final int PANTS_INDEX;
+    private static final int BOOTS_INDEX;
+    private static final int RIGHT_HAND_INDEX;
+    private static final int LEFT_HAND_INDEX;
+
     Inventory menu;
     private PlayerEditor pe;
     private ArmorStand armorstand;
     static String name = "ArmorStand Equipment";
-    ItemStack helmet, chest, pants, feetsies, rightHand, leftHand;
-
-
-
 
     public EquipmentMenu(PlayerEditor pe, ArmorStand as) {
         this.pe = pe;
@@ -126,61 +127,56 @@ public class EquipmentMenu implements EditorMenu {
         return icon;
     }
 
+
+
     public void equipArmorStand() {
         Inventory menu = this.menu;
 
-        helmet = menu.getItem(9);
-        chest = menu.getItem(10);
-        pants = menu.getItem(11);
-        feetsies = menu.getItem(12);
-        rightHand = menu.getItem(13);
-        leftHand = menu.getItem(14);
-
         EntityEquipment equipment = armorstand.getEquipment();
 
-        equipment.setHelmet(helmet);
-        equipment.setChestplate(chest);
-        equipment.setLeggings(pants);
-        equipment.setBoots(feetsies);
-        equipment.setItemInMainHand(rightHand);
-        equipment.setItemInOffHand(leftHand);
+        Player player = pe.getPlayer();
 
-        CoreProtectAPI api = getCoreProtect();
-        if (api != null){ // Ensure we have access to the API
-            api.testAPI(); // Will print out "[CoreProtect] API test successful." in the console.
+        ItemStack[] oldContents = Util.getArmorStandContents(equipment);
+        ItemStack[] updatedContents = oldContents.clone();
+        ItemStack[] newContents = {
+                menu.getItem(HELMET_INDEX),
+                menu.getItem(CHEST_INDEX),
+                menu.getItem(PANTS_INDEX),
+                menu.getItem(BOOTS_INDEX),
+                menu.getItem(RIGHT_HAND_INDEX),
+                menu.getItem(LEFT_HAND_INDEX)
+        };
 
-            Location loc = armorstand.getLocation();
-
-            int x = loc.getBlockX();
-            int y = loc.getBlockY();
-            int z = loc.getBlockZ();
-
-            if (api.logInteraction("TEST USER", new Location(loc.getWorld(), x, y, z))) {
-                Debug.log("Logged Successfully");
+        for (int i = 0; i < newContents.length; i++) {
+            if (newContents[i] != null && !newContents[i].getType().equals(Material.AIR)
+                    && !newContents[i].equals(oldContents[i])) { //if equipment changed
+                updatedContents[i] = newContents[i];
             }
         }
+
+        if (!Arrays.equals(oldContents, updatedContents)) { // Only send the update if there is a change
+            PlayerInteractEntityListener.queueContainerSpecifiedItems(
+                    player.getName(),
+                    Material.ARMOR_STAND,
+                    new Object[]{oldContents, updatedContents},
+                    armorstand.getLocation(),
+                    false);
+        }
+
+        equipment.setHelmet(newContents[0]);
+        equipment.setChestplate(newContents[1]);
+        equipment.setLeggings(newContents[2]);
+        equipment.setBoots(newContents[3]);
+        equipment.setItemInMainHand(newContents[4]);
+        equipment.setItemInOffHand(newContents[5]);
     }
 
-    private CoreProtectAPI getCoreProtect() {
-        Plugin plugin = getServer().getPluginManager().getPlugin("CoreProtect");
-
-        // Check that CoreProtect is loaded
-        if (plugin == null || !(plugin instanceof CoreProtect)) {
-            return null;
-        }
-
-        // Check that the API is enabled
-        CoreProtectAPI CoreProtect = ((CoreProtect) plugin).getAPI();
-        if (CoreProtect.isEnabled() == false) {
-            return null;
-        }
-
-        // Check that a compatible version of the API is loaded
-        if (CoreProtect.APIVersion() < 10) {
-            return null;
-        }
-
-        return CoreProtect;
+    static {
+        HELMET_INDEX = 9;
+        CHEST_INDEX = 10;
+        PANTS_INDEX = 11;
+        BOOTS_INDEX = 12;
+        RIGHT_HAND_INDEX = 13;
+        LEFT_HAND_INDEX = 14;
     }
-
 }

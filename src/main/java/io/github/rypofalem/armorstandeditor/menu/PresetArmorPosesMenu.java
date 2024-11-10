@@ -22,6 +22,8 @@ package io.github.rypofalem.armorstandeditor.menu;
 import io.github.rypofalem.armorstandeditor.ArmorStandEditorPlugin;
 import io.github.rypofalem.armorstandeditor.PlayerEditor;
 
+import io.github.rypofalem.armorstandeditor.api.events.editor.ArmorStandEditorOpenedEvent;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -33,12 +35,13 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.EulerAngle;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class PresetArmorPosesMenu {
+public class PresetArmorPosesMenu implements EditorMenu {
 
-    Inventory menuInv;
+    Inventory menu;
     private final PlayerEditor pe;
     public ArmorStandEditorPlugin plugin = ArmorStandEditorPlugin.instance();
     private ArmorStand armorstand;
@@ -48,7 +51,28 @@ public class PresetArmorPosesMenu {
         this.pe = pe;
         this.armorstand = as;
         name = plugin.getLang().getMessage("presettitle", "menutitle");
-        menuInv = Bukkit.createInventory(pe.getManager().getPresetHolder(), 36, name);
+        //menu = Bukkit.createInventory(pe.getPlayerEditorManager().getPresetHolder(), 36, name);
+        menu = Bukkit.createInventory(this, 36, name);
+    }
+
+    @Override
+    public void open() {
+        Player player = pe.getPlayer();
+
+        ArmorStandEditorOpenedEvent event = new ArmorStandEditorOpenedEvent(pe.getPlayer(), this);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
+
+        if (player.hasPermission("asedit.basic")) {
+            fillInventory();
+            player.openInventory(menu);
+        }
+    }
+
+
+    @Override
+    public ArmorStand getArmorStand() {
+        return this.armorstand;
     }
 
     //PRESET NAMES
@@ -68,7 +92,7 @@ public class PresetArmorPosesMenu {
     final String HOWTO      = plugin.getLang().getMessage("howtopreset").replace("§6","§2§n");
 
     private void fillInventory() {
-        menuInv.clear();
+        menu.clear();
 
         /**
          * Menu Set up in a similar way as to how we do it for
@@ -102,7 +126,7 @@ public class PresetArmorPosesMenu {
             blank, blank, blank, blank, blank, blank, blank, blank, blank
         };
 
-        menuInv.setContents(items);
+        menu.setContents(items);
     }
 
     private ItemStack createIcon(ItemStack icon, String path) {
@@ -125,13 +149,6 @@ public class PresetArmorPosesMenu {
         return plugin.getLang().getMessage(path + ".description", "icondescription");
     }
 
-    public void openMenu() {
-        if (pe.getPlayer().hasPermission("asedit.basic")) {
-            fillInventory();
-            pe.getPlayer().openInventory(menuInv);
-        }
-    }
-
     public static String getName() {
         return name;
     }
@@ -144,54 +161,70 @@ public class PresetArmorPosesMenu {
         if (itemName.equals(SITTING)){
             setPresetPose(player, 345, 0, 10, 350, 0, 350, 280, 20, 0, 280, 340, 0, 0, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(WAVING)){
             setPresetPose(player, 220, 20, 0, 350, 0, 350, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(GREETING_1)) {
             setPresetPose(player, 260, 20, 0, 260, 340, 0, 340, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(GREETING_2)) {
             setPresetPose(player, 260, 10, 0, 260, 350, 0, 320, 0, 0, 10, 0, 0, 340, 0, 350, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(ARCHER)) {
             setPresetPose(player, 270, 350, 0, 280, 50, 0, 340, 0, 10, 20, 0, 350, 0, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(DANCING)){
             setPresetPose(player, 14, 0, 110, 20, 0, 250, 250, 330, 0, 15, 330, 0, 350, 350, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(CHEERS)) {
             setPresetPose(player, 250, 60, 0, 20, 10, 0, 10, 0, 0, 350, 0, 0, 340, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(HANGING)) {
             setPresetPose(player, 1, 33, 67, -145, -33, -4, -42, 21, 1, -100, 0, -1, -29, -38, -18, 0, -4, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(PRESENTING)) {
             setPresetPose(player, 280, 330, 0, 10, 0, 350, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(FISHING)) {
             setPresetPose(player, 300, 320, 0, 300, 40, 0, 280, 20, 0, 280, 340, 0, 0, 0, 0, 0, 0, 0);
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         } else if (itemName.equals(BACKTOMENU)) {
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
-            pe.openMenu();
+
+            this.close(player);
+            pe.openMainMenu();
         } else if (itemName.equals(HOWTO)) {
             player.sendMessage(pe.plugin.getLang().getMessage("howtopresetmsg"));
             player.sendMessage(pe.plugin.getLang().getMessage("helpurl"));
             player.sendMessage(pe.plugin.getLang().getMessage("helpdiscord"));
             player.playSound(player.getLocation(), Sound.BLOCK_COMPARATOR_CLICK, 1, 1);
-            player.closeInventory();
+
+            this.close(player);
         }
+    }
+
+    public void close(Player player) {
+        player.closeInventory();
     }
 
     public void setPresetPose(Player player, double rightArmRoll, double rightArmYaw, double rightArmPitch,
@@ -252,4 +285,9 @@ public class PresetArmorPosesMenu {
 
     }
 
+
+    @Override
+    public @NotNull Inventory getInventory() {
+        return this.menu;
+    }
 }

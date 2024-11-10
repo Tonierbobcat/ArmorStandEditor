@@ -1,4 +1,4 @@
-package io.github.rypofalem.armorstandeditor.api;
+package io.github.rypofalem.armorstandeditor.api.events;
 
 import lombok.Getter;
 import lombok.Setter;

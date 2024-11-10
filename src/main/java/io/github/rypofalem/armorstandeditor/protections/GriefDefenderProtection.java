@@ -22,6 +22,7 @@ package io.github.rypofalem.armorstandeditor.protections;
 import com.griefdefender.api.GriefDefender;
 import com.griefdefender.api.claim.Claim;
 
+import io.github.rypofalem.armorstandeditor.api.Protection;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;

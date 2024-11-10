@@ -21,6 +21,7 @@ package io.github.rypofalem.armorstandeditor.protections;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.event.executors.TownyActionEventExecutor;
 
+import io.github.rypofalem.armorstandeditor.api.Protection;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

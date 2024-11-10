@@ -19,9 +19,14 @@
 
 package io.github.rypofalem.armorstandeditor.menu;
 
+import io.github.rypofalem.armorstandeditor.Debug;
 import io.github.rypofalem.armorstandeditor.PlayerEditor;
 
+import io.github.rypofalem.armorstandeditor.api.events.editor.ArmorStandEditorOpenedEvent;
+import net.coreprotect.CoreProtect;
+import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.EntityEquipment;
@@ -30,25 +35,55 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class EquipmentMenu {
-    Inventory menuInv;
+import static org.bukkit.Bukkit.getServer;
+
+public class EquipmentMenu implements EditorMenu {
+    Inventory menu;
     private PlayerEditor pe;
     private ArmorStand armorstand;
     static String name = "ArmorStand Equipment";
     ItemStack helmet, chest, pants, feetsies, rightHand, leftHand;
 
+
+
+
     public EquipmentMenu(PlayerEditor pe, ArmorStand as) {
         this.pe = pe;
         this.armorstand = as;
         name = pe.plugin.getLang().getMessage("equiptitle", "menutitle");
-        menuInv = Bukkit.createInventory(pe.getManager().getEquipmentHolder(), 18, name);
+        menu = Bukkit.createInventory(this, 18, name);
+    }
+
+    @Override
+    public void open() {
+        ArmorStandEditorOpenedEvent event = new ArmorStandEditorOpenedEvent(pe.getPlayer(), this);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
+
+
+        fillInventory();
+        pe.getPlayer().openInventory(this.menu);
+    }
+
+
+    @Override
+    public @NotNull Inventory getInventory() {
+        return menu;
+    }
+
+    @Override
+    public ArmorStand getArmorStand() {
+        return this.armorstand;
     }
 
     private void fillInventory() {
-        menuInv.clear();
+        Inventory menu = this.menu;
+        menu.clear();
         EntityEquipment equipment = armorstand.getEquipment();
         assert equipment != null;
         ItemStack helmet = equipment.getHelmet();
@@ -75,7 +110,7 @@ public class EquipmentMenu {
             {helmetIcon, chestIcon, pantsIcon, feetsiesIcon, rightHandIcon, leftHandIcon, disabledIcon, disabledIcon, disabledIcon,
                 helmet, chest, pants, feetsies, rightHand, leftHand, disabledIcon, disabledIcon, disabledIcon
             };
-        menuInv.setContents(items);
+        menu.setContents(items);
     }
 
     private ItemStack createIcon(Material mat, String slot) {
@@ -91,27 +126,61 @@ public class EquipmentMenu {
         return icon;
     }
 
-    public void open() {
-        fillInventory();
-        pe.getPlayer().openInventory(menuInv);
+    public void equipArmorStand() {
+        Inventory menu = this.menu;
+
+        helmet = menu.getItem(9);
+        chest = menu.getItem(10);
+        pants = menu.getItem(11);
+        feetsies = menu.getItem(12);
+        rightHand = menu.getItem(13);
+        leftHand = menu.getItem(14);
+
+        EntityEquipment equipment = armorstand.getEquipment();
+
+        equipment.setHelmet(helmet);
+        equipment.setChestplate(chest);
+        equipment.setLeggings(pants);
+        equipment.setBoots(feetsies);
+        equipment.setItemInMainHand(rightHand);
+        equipment.setItemInOffHand(leftHand);
+
+        CoreProtectAPI api = getCoreProtect();
+        if (api != null){ // Ensure we have access to the API
+            api.testAPI(); // Will print out "[CoreProtect] API test successful." in the console.
+
+            Location loc = armorstand.getLocation();
+
+            int x = loc.getBlockX();
+            int y = loc.getBlockY();
+            int z = loc.getBlockZ();
+
+            if (api.logInteraction("TEST USER", new Location(loc.getWorld(), x, y, z))) {
+                Debug.log("Logged Successfully");
+            }
+        }
     }
 
-    public void equipArmorstand() {
-        helmet = menuInv.getItem(9);
-        chest = menuInv.getItem(10);
-        pants = menuInv.getItem(11);
-        feetsies = menuInv.getItem(12);
-        rightHand = menuInv.getItem(13);
-        leftHand = menuInv.getItem(14);
-        armorstand.getEquipment().setHelmet(helmet);
-        armorstand.getEquipment().setChestplate(chest);
-        armorstand.getEquipment().setLeggings(pants);
-        armorstand.getEquipment().setBoots(feetsies);
-        armorstand.getEquipment().setItemInMainHand(rightHand);
-        armorstand.getEquipment().setItemInOffHand(leftHand);
+    private CoreProtectAPI getCoreProtect() {
+        Plugin plugin = getServer().getPluginManager().getPlugin("CoreProtect");
+
+        // Check that CoreProtect is loaded
+        if (plugin == null || !(plugin instanceof CoreProtect)) {
+            return null;
+        }
+
+        // Check that the API is enabled
+        CoreProtectAPI CoreProtect = ((CoreProtect) plugin).getAPI();
+        if (CoreProtect.isEnabled() == false) {
+            return null;
+        }
+
+        // Check that a compatible version of the API is loaded
+        if (CoreProtect.APIVersion() < 10) {
+            return null;
+        }
+
+        return CoreProtect;
     }
 
-    public static String getName() {
-        return name;
-    }
 }

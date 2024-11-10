@@ -24,6 +24,7 @@ import io.github.rypofalem.armorstandeditor.PlayerEditor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -32,18 +33,19 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class Menu {
+public class MainMenu implements EditorMenu {
     private final Inventory menuInv;
     private final PlayerEditor pe;
     private static String name = "Armor Stand Editor Menu";
 
-    public Menu(PlayerEditor pe) {
+    public MainMenu(PlayerEditor pe) {
         this.pe = pe;
         name = pe.plugin.getLang().getMessage("mainmenutitle", "menutitle");
-        menuInv = Bukkit.createInventory(pe.getManager().getMenuHolder(), 54, name);
+        menuInv = Bukkit.createInventory(this, 54, name);
         fillInventory();
     }
 
@@ -297,14 +299,25 @@ public class Menu {
         return pe.plugin.getLang().getMessage(path + ".description", "icondescription", option);
     }
 
-    public void openMenu() {
+    public static String getName() {
+        return name;
+    }
+
+    @Override
+    public @NotNull Inventory getInventory() {
+        return menuInv;
+    }
+
+    @Override
+    public void open() {
         if (pe.getPlayer().hasPermission("asedit.basic")) {
             fillInventory();
-            pe.getPlayer().openInventory(menuInv);
+            pe.getPlayer().openInventory(this.menuInv);
         }
     }
 
-    public static String getName() {
-        return name;
+    @Override
+    public ArmorStand getArmorStand() {
+        return null;
     }
 }

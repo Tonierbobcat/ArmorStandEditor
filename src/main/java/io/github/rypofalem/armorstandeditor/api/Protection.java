@@ -16,21 +16,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 package io.github.rypofalem.armorstandeditor.api;
 
-import lombok.Getter;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.event.Event;
-
-public abstract class ItemFrameEvent extends Event {
-
-    @Getter
-    protected final ItemFrame itemFrame;
-
-    public ItemFrameEvent(ItemFrame itemFrame) {
-        this.itemFrame = itemFrame;
-    }
-
+public interface Protection {
+    boolean checkPermission(Block block, Player player);
 }

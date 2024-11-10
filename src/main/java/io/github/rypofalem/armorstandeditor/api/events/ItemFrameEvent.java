@@ -16,37 +16,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package io.github.rypofalem.armorstandeditor.api;
+
+package io.github.rypofalem.armorstandeditor.api.events;
 
 import lombok.Getter;
-import lombok.Setter;
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public class PlayerOpenMenuEvent extends Event implements Cancellable {
-    @Getter
-    @Setter
-    private boolean cancelled = false;
+public abstract class ItemFrameEvent extends Event {
 
     @Getter
-    protected final Player player;
+    protected final ItemFrame itemFrame;
 
-    public PlayerOpenMenuEvent(Player player) {
-        this.player = player;
+    public ItemFrameEvent(ItemFrame itemFrame) {
+        this.itemFrame = itemFrame;
     }
 
-    /* Generated for Bukkit */
-    private static final HandlerList handlers = new HandlerList();
-
-    public static HandlerList getHandlerList() {
-        return (handlers);
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return (handlers);
-    }
 }

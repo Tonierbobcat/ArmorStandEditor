@@ -1,4 +1,5 @@
 .idea/
+.testserver/
 target/
 *.iml
 /bin/

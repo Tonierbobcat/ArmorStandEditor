@@ -19,6 +19,7 @@
 
 package io.github.rypofalem.armorstandeditor.protections;
 
+import io.github.rypofalem.armorstandeditor.api.Protection;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 

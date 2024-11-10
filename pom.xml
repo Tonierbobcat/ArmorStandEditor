@@ -65,7 +65,7 @@
         <!--- Update Checker -->
         <repository>
             <id>jeff-media-public</id>
-            <url>https://hub.jeff-media.com/nexus/repository/jeff-media-public/</url>
+            <url>https://repo.jeff-media.com/public/</url>
         </repository>
         <!--- Grief Prevention: DEPRECATION - Discuss Keeping or Removing -->
         <repository>
@@ -81,6 +81,10 @@
         <repository>
             <id>codemc-repo</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>playpro-repo</id>
+            <url>https://maven.playpro.com</url>
         </repository>
     </repositories>
 
@@ -138,6 +142,12 @@
             <scope>provided</scope>
         </dependency>
         <!--- PlotSquared -->
+        <dependency>
+            <groupId>net.coreprotect</groupId>
+            <artifactId>coreprotect</artifactId>
+            <version>22.4</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.intellectualsites.plotsquared</groupId>
             <artifactId>plotsquared-core</artifactId>
@@ -246,21 +256,7 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.openrewrite.maven</groupId>
-                <artifactId>rewrite-maven-plugin</artifactId>
-                <version>5.31.0</version>
-                <configuration>
-                    <activeRecipes>
-                        <recipe>org.openrewrite.java.format.AutoFormat</recipe>
-                        <recipe>org.openrewrite.java.recipes.FindRecipes</recipe>
-                        <recipe>org.openrewrite.java.OrderImports</recipe>
-                        <recipe>org.openrewrite.java.ShortenFullyQualifiedTypeReferences</recipe>
-                        <recipe>org.openrewrite.java.RemoveUnusedImports</recipe>
-                    </activeRecipes>
-                </configuration>
-            </plugin>
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.6.0</version>
@@ -282,7 +278,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -320,6 +316,13 @@
                 <configuration>
                     <scmCommentPrefix>[ci skip] || [CI SKIP] || [CI-SKIP]</scmCommentPrefix>
                     <tagNameFormat>@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>C:\Users\Tonierbobcat\Desktop\Projects\-- COMMISSIONS --\ArmorStandEditor\.testserver\plugins</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

@@ -16,8 +16,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package io.github.rypofalem.armorstandeditor.api;
+package io.github.rypofalem.armorstandeditor.api.events;
 
+import io.github.rypofalem.armorstandeditor.Debug;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,6 +43,8 @@ public class ArmorStandRenameEvent extends ArmorStandEvent implements Cancellabl
         super(armorStand);
         this.player = player;
         this.name = name;
+
+        Debug.log("Ran ArmorStandRenameEvent");
     }
 
     /* Generated for Bukkit */

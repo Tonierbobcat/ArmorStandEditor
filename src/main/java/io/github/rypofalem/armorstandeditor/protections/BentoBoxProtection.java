@@ -19,6 +19,7 @@
 
 package io.github.rypofalem.armorstandeditor.protections;
 
+import io.github.rypofalem.armorstandeditor.api.Protection;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;

@@ -4,6 +4,7 @@ import dev.lone.itemsadder.api.CustomFurniture;
 
 import io.github.rypofalem.armorstandeditor.ArmorStandEditorPlugin;
 
+import io.github.rypofalem.armorstandeditor.api.Protection;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;

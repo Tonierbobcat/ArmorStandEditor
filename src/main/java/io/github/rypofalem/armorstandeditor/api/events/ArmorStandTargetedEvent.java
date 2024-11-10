@@ -17,8 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package io.github.rypofalem.armorstandeditor.api;
+package io.github.rypofalem.armorstandeditor.api.events;
 
+import io.github.rypofalem.armorstandeditor.Debug;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,6 +39,9 @@ public class ArmorStandTargetedEvent extends ArmorStandEvent implements Cancella
     public ArmorStandTargetedEvent(ArmorStand armorStand, Player player) {
         super(armorStand);
         this.player = player;
+
+        Debug.log("Ran ArmorStandTargetedEvent");
+
     }
 
     /* Generated for Bukkit */

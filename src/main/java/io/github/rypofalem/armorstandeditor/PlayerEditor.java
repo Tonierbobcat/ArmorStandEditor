@@ -18,12 +18,13 @@
  */
 package io.github.rypofalem.armorstandeditor;
 
+import io.github.rypofalem.armorstandeditor.api.events.*;
+import io.github.rypofalem.armorstandeditor.api.events.editor.PlayerOpenMenuEvent;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
-import io.github.rypofalem.armorstandeditor.api.*;
 import io.github.rypofalem.armorstandeditor.menu.EquipmentMenu;
-import io.github.rypofalem.armorstandeditor.menu.Menu;
+import io.github.rypofalem.armorstandeditor.menu.MainMenu;
 import io.github.rypofalem.armorstandeditor.menu.PresetArmorPosesMenu;
 
 //Do not optimize these..... This will no work properly
@@ -58,7 +59,7 @@ public class PlayerEditor {
     double eulerAngleChange;
     double degreeAngleChange;
     double movChange;
-    Menu chestMenu;
+    MainMenu chestMenu;
     ArmorStand target;
     ArrayList<ArmorStand> targetList = null;
 
@@ -67,7 +68,7 @@ public class PlayerEditor {
     ArrayList<ItemFrame> frameTargetList = null;
     int targetIndex = 0;
     int frameTargetIndex = 0;
-    EquipmentMenu equipMenu;
+    //EquipmentMenu equipMenu;
     PresetArmorPosesMenu presetPoseMenu;
     long lastCancelled = 0;
 
@@ -78,10 +79,10 @@ public class PlayerEditor {
         adjMode = AdjustmentMode.COARSE;
         axis = Axis.X;
         copySlots = new CopySlots();
-        eulerAngleChange = getManager().coarseAdj;
+        eulerAngleChange = getPlayerEditorManager().coarseAdj;
         degreeAngleChange = eulerAngleChange / Math.PI * 180;
-        movChange = getManager().coarseMov;
-        chestMenu = new Menu(this);
+        movChange = getPlayerEditorManager().coarseMov;
+        chestMenu = new MainMenu(this);
     }
 
     public void setMode(EditMode editMode) {
@@ -97,11 +98,11 @@ public class PlayerEditor {
     public void setAdjMode(AdjustmentMode adjMode) {
         this.adjMode = adjMode;
         if (adjMode == AdjustmentMode.COARSE) {
-            eulerAngleChange = getManager().coarseAdj;
-            movChange = getManager().coarseMov;
+            eulerAngleChange = getPlayerEditorManager().coarseAdj;
+            movChange = getPlayerEditorManager().coarseMov;
         } else {
-            eulerAngleChange = getManager().fineAdj;
-            movChange = getManager().fineMov;
+            eulerAngleChange = getPlayerEditorManager().fineAdj;
+            movChange = getPlayerEditorManager().fineMov;
         }
         degreeAngleChange = eulerAngleChange / Math.PI * 180;
         sendMessage("setadj", adjMode.toString().toLowerCase());
@@ -110,6 +111,41 @@ public class PlayerEditor {
     public void setCopySlot(byte slot) {
         copySlots.changeSlots(slot);
         sendMessage("setslot", String.valueOf((slot + 1)));
+    }
+
+    public void editItemFrame(ItemFrame itemFrame) {
+        if (getPlayer().hasPermission("asedit.toggleitemframevisibility") || plugin.invisibleItemFrames) {
+
+            //Generate a new ArmorStandManipulationEvent and call it out.
+            ItemFrameManipulatedEvent event = new ItemFrameManipulatedEvent(itemFrame, getPlayer());
+            Bukkit.getPluginManager().callEvent(event); // Bukkit handles the call out
+            if (event.isCancelled()) return; //do nothing if cancelled
+
+            switch (eMode) {
+                case ITEMFRAME:
+                    toggleItemFrameVisible(itemFrame);
+                    break;
+                case RESET:
+                    itemFrame.setVisible(true);
+                    break;
+                case NONE:
+                default:
+                    sendMessage("nomodeif", null);
+                    break;
+            }
+        } else return;
+    }
+
+    private void openEquipment(ArmorStand armorStand) {
+        if (!getPlayer().hasPermission("asedit.equipment")) return;
+        //if (team != null && team.hasEntry(armorStand.getName())) return; //Do not allow editing if the ArmorStand is Disabled
+        new EquipmentMenu(this, armorStand).open();
+    }
+
+    private void choosePreset(ArmorStand armorStand) {
+        if (!getPlayer().hasPermission("asedit.basic")) return;
+        presetPoseMenu = new PresetArmorPosesMenu(this, armorStand);
+        presetPoseMenu.open();
     }
 
     public void editArmorStand(ArmorStand armorStand) {
@@ -189,48 +225,13 @@ public class PlayerEditor {
         } else return;
     }
 
-    public void editItemFrame(ItemFrame itemFrame) {
-        if (getPlayer().hasPermission("asedit.toggleitemframevisibility") || plugin.invisibleItemFrames) {
-
-            //Generate a new ArmorStandManipulationEvent and call it out.
-            ItemFrameManipulatedEvent event = new ItemFrameManipulatedEvent(itemFrame, getPlayer());
-            Bukkit.getPluginManager().callEvent(event); // Bukkit handles the call out
-            if (event.isCancelled()) return; //do nothing if cancelled
-
-            switch (eMode) {
-                case ITEMFRAME:
-                    toggleItemFrameVisible(itemFrame);
-                    break;
-                case RESET:
-                    itemFrame.setVisible(true);
-                    break;
-                case NONE:
-                default:
-                    sendMessage("nomodeif", null);
-                    break;
-            }
-        } else return;
-    }
-
-    private void openEquipment(ArmorStand armorStand) {
-        if (!getPlayer().hasPermission("asedit.equipment")) return;
-        //if (team != null && team.hasEntry(armorStand.getName())) return; //Do not allow editing if the ArmorStand is Disabled
-        equipMenu = new EquipmentMenu(this, armorStand);
-        equipMenu.open();
-    }
-
-    private void choosePreset(ArmorStand armorStand) {
-        if (!getPlayer().hasPermission("asedit.basic")) return;
-        presetPoseMenu = new PresetArmorPosesMenu(this, armorStand);
-        presetPoseMenu.openMenu();
-    }
-
+    //Used on right click
     public void reverseEditArmorStand(ArmorStand armorStand) {
         if (!getPlayer().hasPermission("asedit.basic")) return;
 
         //Generate a new ArmorStandManipulationEvent and call it out.
         ArmorStandManipulatedEvent event = new ArmorStandManipulatedEvent(armorStand, getPlayer());
-        Bukkit.getPluginManager().callEvent(event); // Bukkit handles the call out //TODO: Folia Refactor
+        Bukkit.getPluginManager().callEvent(event); //TODO: Folia Refactor
         if (event.isCancelled()) return; //do nothing if cancelled
 
         armorStand = attemptTarget(armorStand);
@@ -260,7 +261,7 @@ public class PlayerEditor {
                 reverseRotate(armorStand);
                 break;
             default:
-                editArmorStand(armorStand);
+                this.editArmorStand(armorStand);
         }
     }
 
@@ -639,7 +640,7 @@ public class PlayerEditor {
         armorStand.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 50, 1, false, false)); //300 Ticks = 15 seconds
     }
 
-    public PlayerEditorManager getManager() {
+    public PlayerEditorManager getPlayerEditorManager() {
         return plugin.editorManager;
     }
 
@@ -651,18 +652,18 @@ public class PlayerEditor {
         return uuid;
     }
 
-    public void openMenu() {
+    public void openMainMenu() {
         if (!isMenuCancelled()) {
             Scheduler.runTaskLater(plugin, new OpenMenuTask(), 1);
         }
     }
 
     public void cancelOpenMenu() {
-        lastCancelled = getManager().getTime();
+        lastCancelled = getPlayerEditorManager().getTime();
     }
 
     boolean isMenuCancelled() {
-        return getManager().getTime() - lastCancelled < 2;
+        return getPlayerEditorManager().getTime() - lastCancelled < 2;
     }
 
     private class OpenMenuTask implements Runnable {
@@ -676,7 +677,7 @@ public class PlayerEditor {
             Bukkit.getPluginManager().callEvent(event); //TODO: Folia Refactor
             if (event.isCancelled()) return;
 
-            chestMenu.openMenu();
+            chestMenu.open();
         }
     }
 }
